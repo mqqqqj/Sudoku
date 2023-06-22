@@ -15,6 +15,7 @@
 x64/
 x86/
 [Aa][Pp][Ii]-[Mm][Ss]-[Ww][Ii][Nn]*/
+.vs/
 
 # 排除IntelliSense帮助文件夹
 *.sdf
