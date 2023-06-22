@@ -1,0 +1,57 @@
+# 排除生成的可执行文件和库文件
+*.exe
+*.dll
+*.pdb
+
+# 排除生成的临时文件和日志文件
+*.obj
+*.log
+*.user
+*.suo
+
+# 排除Visual Studio生成的文件和文件夹
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Pp][Ii]-[Mm][Ss]-[Ww][Ii][Nn]*/
+
+# 排除IntelliSense帮助文件夹
+*.sdf
+*.opensdf
+*.VC.opendb
+
+# 排除编译输出文件夹
+[Bb]in/
+[Oo]bj/
+
+# 排除Visual Studio项目文件
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# 排除Visual Studio解决方案文件
+*.sln
+*.suo
+*.user
+*.sln.docstates
+
+# 排除Visual Studio代码分析和编译配置文件
+*.vspscc
+*.vssscc
+*_i.c
+*_p.c
+*.ncb
+*.aps
+*.bsc
+*.tlb
+*.tlh
+*.bak
+*.cache
+*.ilk
+*.log
+*.lib
+*.sbr
+*.scc
+*.trx
+msbuild.log
