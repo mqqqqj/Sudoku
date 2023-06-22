@@ -1,0 +1,1 @@
+S:\Code\sudoku\x64\Release\sudoku.exe
