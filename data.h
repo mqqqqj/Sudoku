@@ -12,6 +12,8 @@ struct Param {
 	int m;           // 游戏难度  [1, 3]
 	int r;           // 挖空数量  [20, 55]
 	bool u;          // 唯一解
+
+	int l;           // 棋盘长度：2、3、4
 };
 
 Param params;
