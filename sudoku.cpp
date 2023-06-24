@@ -1,9 +1,11 @@
 #include <iostream>
 #include <fstream>
-
+#include <random>
 
 #include "data.h"
 #include "macro.h"
+#include "function.h"
+
 
 bool read_args(int argc, char* argv[]) {
     std::cout << "nums of args:" << argc << std::endl;
@@ -30,20 +32,23 @@ bool read_args(int argc, char* argv[]) {
             params.u = true;
     }
 
+    params.l = DEFAULT_SIZE;
+
     if (!check_args()) {
         return false;
     };
 
-    board = new int*[DEFAULT_SIZE];
-    for (int i = 0; i < DEFAULT_SIZE; i++) {
-        board[i] = new int[DEFAULT_SIZE];
+    int n = params.l * params.l;
+    board = new int*[n];
+    for (int i = 0; i < n; i++) {
+        board[i] = new int[n];
     }
 
     return true;
 }
 
 bool check_args() {
-    return false;
+    return true;
 }
 
 // TODO
@@ -66,9 +71,79 @@ void write_file() {
     }
 }
 
+bool generate_board(int mod) {
+    if (mod == 0) {
+        return false;
+    }
+    // 随机棋盘
+    else if (mod == 1) {
+        // 创建随机数生成器
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis(1, 9); // 假设生成 1 到 100 之间的随机数
+
+        int length = params.l * params.l;
+        // 为数组赋随机值
+        for (int i = 0; i < length; i++) {
+            for (int j = 0; j < length; j++) {
+                board[i][j] = dis(gen);
+            }
+        }
+        return true;
+    }
+    else
+        return false;
+}
+
+void draw_board() {
+    int block = params.l;
+    int length = params.l * params.l;
+    int char_length = 2 * (1 + block + length) - 1;
+
+    for (int i = 0; i < char_length; i++) {
+        // i % (length -1)：每个宫需要length-2个横线，所以每隔length-1个横线就需要添加一个加号
+        if (i == 0 || i % ( 2 * block + 2)==0) 
+            std::cout << "+";
+        else
+            std::cout << "-";
+    }
+    std::cout << std::endl;
+
+
+    for (int r = 0; r < length; r++) {
+
+        std::cout << "| ";
+        for (int c = 0; c < length; c++) {
+            if(board[r][c]==0)
+                std::cout << "$";
+            else
+                std::cout << board[r][c];
+            std::cout << " ";
+            if ((c+1)%block==0)std::cout << "| ";
+        }
+        std::cout << std::endl;
+
+        // 打印横线
+        if ((r+1) % block == 0) {
+            for (int i = 0; i < char_length; i++) {
+                if (i == 0 || i % (2 * block + 2) == 0)
+                    std::cout << "+";
+                else
+                    std::cout << "-";
+            }
+            std::cout << std::endl;
+        }
+    }
+}
+
 int main(int argc, char* argv[]) {
-    read_args(argc, argv);
+    if (!read_args(argc, argv)) {
+        std::cout << "读取参数错误，请重新执行！" << std::endl;
+        return -1;
+    };
     //write_file();
 
+    generate_board(1);
+    draw_board();
     return 0;
 }
