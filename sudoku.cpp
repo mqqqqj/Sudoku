@@ -1,4 +1,6 @@
 
+#include <windows.h>
+
 #include "data.h"
 #include "macro.h"
 #include "function.h"
@@ -18,18 +20,36 @@ bool read_args(int argc, char* argv[]) {
     for (int i = 1; i < argc; i++)
     {
         // c, s, n, m, r, u
-        if (!strcmp(argv[i], "-c"))   
+        if (!strcmp(argv[i], "-c")) {
             params.c = atoi(argv[i + 1]);
-        else if (!strcmp(argv[i], "-s")) 
+            has_args[0] = true;
+        }
+        else if (!strcmp(argv[i], "-s")) {
             sprintf(params.s, "%s", argv[i + 1]);
-        else if (!strcmp(argv[i], "-n"))
+            has_args[1] = true;
+        }
+        else if (!strcmp(argv[i], "-n")) {
             params.n = atoi(argv[i + 1]);
-        else if (!strcmp(argv[i], "-m")) 
+            has_args[2] = true;
+        }
+        else if (!strcmp(argv[i], "-m")) {
             params.m = atoi(argv[i + 1]);
-        else if (!strcmp(argv[i], "-r"))
-            params.r = atoi(argv[i + 1]);
-        else if (!strcmp(argv[i], "-u"))
+            has_args[3] = true;
+        }
+        else if (!strcmp(argv[i], "-r")) {
+            std::stringstream ss(argv[i+1]);
+            std::string token;
+            getline(ss, token, '~');
+            params.rl = std::stoi(token);
+            getline(ss, token, '~');
+            params.rr = std::stoi(token);
+            has_args[4] = true;
+            has_args[5] = true;
+        }
+        else if (!strcmp(argv[i], "-u")) {
             params.u = true;
+            has_args[6] = true;
+        }
     }
 
     params.l = DEFAULT_SIZE;
@@ -39,15 +59,20 @@ bool read_args(int argc, char* argv[]) {
     };
 
     int n = params.l * params.l;
-    board = new int*[n];
+    board.resize(n);
+    board_unsolved.resize(n);
     for (int i = 0; i < n; i++) {
-        board[i] = new int[n];
+        board[i].resize(n);
+        board_unsolved[i].resize(n);
     }
 
     return true;
 }
 
 bool check_args() {
+    // TODO，检查参数搭配使用是否正确，以及赋默认值
+    params.rl = DEFAULT_RL;
+    params.rr = DEFAULT_RR;
     return true;
 }
 
@@ -88,20 +113,38 @@ bool generate_board(int mod) {
                 board[i][j] = dis(gen);
             }
         }
+        board_unsolved = board;
         return true;
     }
     else if (mod == 2) {
-        // 记得先初始化为0，否则无法填充
-        int length = params.l * params.l;
-        for (int i = 0; i < length; i++) {
-            for (int j = 0; j < length; j++) {
-                board[i][j] = 0;
-            }
-        }
-        solve_sudoku();
+        // 直接填充
+        solve_sudoku(board);
+        board_unsolved = board;
+        return true;
     }
-    else
+    else if (mod == 3) {
+        // 先填好
+        solve_sudoku(board);
+        // 再copy一份，用来挖空
+        board_unsolved = board;
+        // 挖空(一般都能true，否则设置的r不合理)
+        return dig_hole(board);
+    }
+    else if (mod == 4) {
+        // 先填好
+        solve_sudoku(board);
+        // 再copy一份，用来挖空
+        board_unsolved = board;
+        do {
+            // 挖空，若不是唯一解就继续挖
+            if (dig_hole(board)) {
+                return false;
+            }
+        } while (!check_unique(board_unsolved));
+    }
+    else {
         return false;
+    }
 }
 
 char get_num(int num) {
@@ -112,15 +155,23 @@ char get_num(int num) {
     else if (num > 9 && num < 17)
         return num - 10 + 'A';
     else {
-        std::cout <<"【" << num<<"】";
+        //std::cout <<"【" << num<<"】";
         return 'X';
     }
 }
 
-void draw_board() {
+void draw_board(const std::vector<std::vector<int>>& board) {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    // 字体颜色为红色
+    SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE|FOREGROUND_GREEN);
+
     int block = params.l;
     int length = params.l * params.l;
     int char_length = 2 * (1 + block + length) - 1;
+    for (int i = 0; i < char_length; i++) {
+        std::cout << "*";
+    }
+    std::cout << std::endl;
 
     for (int i = 0; i < char_length; i++) {
         // i % (length -1)：每个宫需要length-2个横线，所以每隔length-1个横线就需要添加一个加号
@@ -152,11 +203,17 @@ void draw_board() {
             std::cout << std::endl;
         }
     }
+    for (int i = 0; i < char_length; i++) {
+        std::cout << "*";
+    }
+    std::cout << std::endl;
+    // 恢复默认的字体颜色
+    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 }
 
 
 // 检查某个数字是否能填入指定的行、列和小九宫格
-bool is_valid(int row, int col, int num) {
+bool is_valid(const std::vector<std::vector<int>>& board, int row, int col, int num) {
     int block = params.l;
     int length = params.l * params.l;
 
@@ -184,7 +241,7 @@ bool is_valid(int row, int col, int num) {
 
 
 // 找到下一个空单元格
-std::pair<int, int> find_empty_cell() {
+std::pair<int, int> find_empty_cell(const std::vector<std::vector<int>>& board) {
     int length = params.l * params.l;
     for (int i = 0; i < length; i++) {
         for (int j = 0; j < length; j++) {
@@ -199,9 +256,9 @@ std::pair<int, int> find_empty_cell() {
 
 
 // 使用回溯算法填充数独棋盘
-bool solve_sudoku() {
+bool solve_sudoku(std::vector<std::vector<int>>& board) {
     // 找到下一个空单元格
-    std::pair<int, int> cell = find_empty_cell();
+    std::pair<int, int> cell = find_empty_cell(board);
     int row = cell.first;
     int col = cell.second;
 
@@ -216,11 +273,11 @@ bool solve_sudoku() {
     std::shuffle(numbers.begin(), numbers.end(), gen);
 
     for (int num : numbers) {
-        if (is_valid(row, col, num)) {
+        if (is_valid(board, row, col, num)) {
             board[row][col] = num;
 
             // 递归填充下一个单元格
-            if (solve_sudoku()) {
+            if (solve_sudoku(board)) {
                 return true;
             }
 
@@ -234,6 +291,20 @@ bool solve_sudoku() {
 }
 
 
+// 检查数独是否有解
+bool has_solution(const std::vector<std::vector<int>>& board) {
+    std::vector<std::vector<int>> board_copy = board;
+    return solve_sudoku(board_copy);
+}
+
+bool dig_hole(std::vector<std::vector<int>>& board) {
+    return true;
+}
+
+bool check_unique(std::vector<std::vector<int>>& board) {
+    return true;
+}
+
 int main(int argc, char* argv[]) {
     if (!read_args(argc, argv)) {
         std::cout << "读取参数错误，请重新执行！" << std::endl;
@@ -242,6 +313,6 @@ int main(int argc, char* argv[]) {
     //write_file();
 
     generate_board(2);
-    draw_board();
+    draw_board(board);
     return 0;
 }
