@@ -1,5 +1,6 @@
 
 #include <windows.h>
+#include <algorithm>
 
 #include "data.h"
 #include "macro.h"
@@ -80,9 +81,26 @@ bool check_args() {
         std::cout << has_args[i] << " ";
     }
     std::cout << std::endl;
-    params.rl = DEFAULT_RL;
-    params.rr = DEFAULT_RR;
-    return true;
+    for (int i = 0; i < 2; ++i) {//对于-c或者-s,都要求其他全为false
+        if (has_args[i]) {
+            has_args[i] = false;
+            bool result = std::all_of(has_args, has_args + sizeof(has_args), [](bool element) { return !element; });
+            has_args[i] = true;
+            return result;
+        }
+    }
+    if (has_args[2]) {
+        // n , n && m, n && rl && rr, n && u这四种情况是合法的,其他均不合法
+        int count = std::count(has_args + 3, has_args + sizeof(has_args), true);
+        if (count == 2) {
+            return has_args[4] && has_args[5];
+        }
+        else if (count == 1) {
+            return has_args[3] || has_args[6];
+        }
+        else return count == 0;
+    }
+    return false;
 }
 
 // TODO
@@ -358,13 +376,20 @@ int check_unique(std::vector<std::vector<int>>& board, int x, int y, int count) 
 }
 
 void print_params() {
-    std::cout << "终盘数量  [1, 1e6]: " << params.c << std::endl;
-    std::cout << "待求解棋盘的相对或绝对路径: " << params.s << std::endl;
-    std::cout << "游戏数量: " << params.n << std::endl;
-    std::cout << "游戏难度  [1, 3]: " << params.m << std::endl;
-    std::cout << "挖空数量下界  [20, 55]: " << params.rl << std::endl;
-    std::cout << "终盘数量上界  [1, 1e6]: " << params.rr << std::endl;
-    std::cout << "是否生成唯一解: " << params.u << std::endl;
+    if(has_args[0])
+        std::cout << "终盘数量  [1, 1e6]: " << params.c << std::endl;
+    if(has_args[1])
+        std::cout << "待求解棋盘的相对或绝对路径: " << params.s << std::endl;
+    if(has_args[2])
+        std::cout << "游戏数量: " << params.n << std::endl;
+    if(has_args[3])
+        std::cout << "游戏难度  [1, 3]: " << params.m << std::endl;
+    if(has_args[4])
+        std::cout << "挖空数量下界  [20, 55]: " << params.rl << std::endl;
+    if(has_args[5])
+        std::cout << "挖空数量上界  [20, 55]: " << params.rr << std::endl;
+    if(has_args[6])
+        std::cout << "生成唯一解: " << params.u << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -374,7 +399,9 @@ int main(int argc, char* argv[]) {
         return -1;
     };
     //write_file();
+    system("pause");
     print_params();
+    system("pause");
     generate_board(4);
     Log("Unsolved Board:", 1);
     draw_board(board_unsolved);
