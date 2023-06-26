@@ -2,7 +2,7 @@
 #ifndef __MACRO_H__
 #define __MACRO_H__
 /*
-* sudoku用到的宏定义，常数，及默认参数
+* 【macor.h】sudoku用到的宏定义，常数，及默认参数
 */
 
 // PART1.题目要求

@@ -3,7 +3,7 @@
 #define __DATA_H__
 #include <vector>
 /*
-* sudoku用到的数据结构
+* 【data.h】sudoku用到的数据结构
 */
 
 struct Param {
