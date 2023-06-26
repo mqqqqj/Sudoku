@@ -11,11 +11,13 @@ std::random_device rd;
 std::mt19937 gen(rd());
 
 bool read_args(int argc, char* argv[]) {
-    std::cout << "nums of args:" << argc << std::endl;
+    sprintf(buf, "nums of args: %d", argc);
+    Log(buf, 1);
 
     // DEBUG
     for (int i = 0; i < argc; ++i) {
-        std::cout << "param[" << i << "]: " << argv[i] << std::endl;
+        sprintf(buf, "param[%d]: %s", argc, argv[i]);
+        Log(buf, 1);
     }
     params.c = DEFAULT_C;
     strcpy(params.s, DEFAULT_PATH);
@@ -84,9 +86,11 @@ bool read_args(int argc, char* argv[]) {
 
 bool check_args() {
     // TODO，检查参数搭配使用是否正确,参数赋默认值在read_args函数中一开始就应完成.
+    Log("params used:", 1);
     for (int i = 0; i < 7; ++i) {
         std::cout << has_args[i] << " ";
     }
+    Log("", 0);
     std::cout << std::endl;
     for (int i = 0; i < 2; ++i) {//对于-c或者-s,都要求其他全为false
         if (has_args[i]) {
@@ -455,7 +459,8 @@ void print_params() {
 int main(int argc, char* argv[]) {
 
     if (!read_args(argc, argv)) {
-        std::cout << "读取参数错误，请重新执行！" << std::endl;
+        Log("读取参数错误，请重新执行！", 3);
+        Log(HELP_STRING, 1);
         system("pause");
         return -1;
     };
