@@ -21,6 +21,9 @@ bool has_solution(const std::vector<std::vector<int>>& board);                  
 int check_unique(std::vector<std::vector<int>>& board, int x, int y, int count);        // 检查是否唯一解(返回解的个数)
 bool dig_hole(std::vector<std::vector<int>>& board);                                    // 挖空
 void print_params();
+std::vector<std::vector<std::vector<int>>> read_file(const char* file_name);
+void write_file(const char* file_name, std::vector<std::vector<int>> board);
+void clear_file(const char* file_name);
 /*
 * 调试专用
 */
