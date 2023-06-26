@@ -111,7 +111,7 @@ bool check_args() {
 }
 
 //将一个数独游戏写到文件中
-void write_file(char* file_name, std::vector<std::vector<int>> board) {
+void write_file(const char* file_name, std::vector<std::vector<int>> board) {
     // 打开文件并指定路径,模式为追加写入
     std::ofstream file(file_name, std::ios::out | std::ios::app);
 
@@ -135,7 +135,7 @@ void write_file(char* file_name, std::vector<std::vector<int>> board) {
 }
 
 //从文件中读若干个数独游戏
-std::vector<std::vector<std::vector<int>>> read_file(char* file_name) {
+std::vector<std::vector<std::vector<int>>> read_file(const char* file_name) {
     std::vector<std::vector<std::vector<int>>> boards;
     std::ifstream file(file_name);
     if (file.is_open()) {
@@ -172,7 +172,7 @@ std::vector<std::vector<std::vector<int>>> read_file(char* file_name) {
     return boards;
 }
 
-void clear_file(char* file_name) {
+void clear_file(const char* file_name) {
     std::ofstream file(file_name, std::ios::trunc);
     if (file.is_open()) {
         file.close();
