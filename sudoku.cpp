@@ -110,23 +110,76 @@ bool check_args() {
     return false;
 }
 
-// TODO
-void write_file() {
-    // 打开文件并指定路径
-    std::ofstream file("output.txt");
+//将一个数独游戏写到文件中
+void write_file(char* file_name, std::vector<std::vector<int>> board) {
+    // 打开文件并指定路径,模式为追加写入
+    std::ofstream file(file_name, std::ios::out | std::ios::app);
 
     // 检查文件是否成功打开
     if (file.is_open()) {
         // 向文件写入数据
-        file << "这是要写入文件的内容" << std::endl;
-        file << "另一行数据" << std::endl;
-
+        for (const auto& row : board) {
+            for (const auto& element : row) {
+                file << element << " ";
+            }
+            file << std::endl;
+        }
+        file << "-------END-------" << std::endl;;
         // 关闭文件
         file.close();
         std::cout << "文件写入成功" << std::endl;
     }
     else {
         std::cout << "无法打开文件" << std::endl;
+    }
+}
+
+//从文件中读若干个数独游戏
+std::vector<std::vector<std::vector<int>>> read_file(char* file_name) {
+    std::vector<std::vector<std::vector<int>>> boards;
+    std::ifstream file(file_name);
+    if (file.is_open()) {
+        std::vector<std::vector<int>> one_board;
+        std::string line;
+        while (std::getline(file, line)) {
+            if (line ==  "-------END-------") {
+                //读取一个新的数独
+                std::vector<std::vector<int>> copied_board(one_board);//深拷贝
+                boards.push_back(copied_board);//加入到已读取的数独中
+                for (auto& row : one_board) {//清空原数独
+                    row.clear();
+                }
+                one_board.clear();
+                one_board.resize(0);
+                continue;
+            }
+            std::vector<int> row;
+            std::istringstream iss(line);
+            int num;
+
+            while (iss >> num) {
+                row.push_back(num);
+            }
+
+            one_board.push_back(row);
+        }
+        file.close();
+        std::cout << "文件读取成功" << std::endl;
+    }
+    else {
+        std::cout << "无法打开文件" << std::endl;
+    }
+    return boards;
+}
+
+void clear_file(char* file_name) {
+    std::ofstream file(file_name, std::ios::trunc);
+    if (file.is_open()) {
+        file.close();
+        std::cout << "文件已被清空。" << std::endl;
+    }
+    else {
+        std::cout << "无法打开文件。" << std::endl;
     }
 }
 
@@ -423,15 +476,14 @@ int main(int argc, char* argv[]) {
     }
     else if (has_args[1]) {
         //TODO::从文件中读取若干数独游戏,求解并输出到指定sudoku.txt文件
-        generate_board(3);
-        Log("Unsolved Board:", 1);
-        draw_board(board_unsolved);
-
-        solve_sudoku(board_unsolved);
-        Log("Standard Answer:", 1);
-        draw_board(board);
-        Log("Solved Answer:", 1);
-        draw_board(board_unsolved);
+        clear_file("sudoku.txt");
+        std::vector<std::vector<std::vector<int>>> boards = read_file(params.s);
+        for (int i = 0; i < boards.size(); ++i) {
+            draw_board(boards[i]);
+            board_unsolved = boards[i];
+            solve_sudoku(board_unsolved);
+            write_file("sudoku.txt", board_unsolved);
+        }
     }
     else if (has_args[2]) {
         //指定游戏数量
@@ -446,7 +498,11 @@ int main(int argc, char* argv[]) {
         }
     }
 
-
+    //solve_sudoku(board_unsolved);
+    //Log("Standard Answer:", 1);
+    //draw_board(board);
+    //Log("Solved Answer:", 1);
+    //draw_board(board_unsolved);
 
     system("pause");
     return 0;
