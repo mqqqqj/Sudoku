@@ -20,7 +20,7 @@ bool solve_sudoku(std::vector<std::vector<int>>& board);                        
 bool has_solution(const std::vector<std::vector<int>>& board);                          // 判断是否有解
 int check_unique(std::vector<std::vector<int>>& board, int x, int y, int count);        // 检查是否唯一解(返回解的个数)
 bool dig_hole(std::vector<std::vector<int>>& board);                                    // 挖空
-
+void print_params();
 /*
 * 调试专用
 */

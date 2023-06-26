@@ -23,18 +23,22 @@ bool read_args(int argc, char* argv[]) {
         if (!strcmp(argv[i], "-c")) {
             params.c = atoi(argv[i + 1]);
             has_args[0] = true;
+            i++;
         }
         else if (!strcmp(argv[i], "-s")) {
             sprintf(params.s, "%s", argv[i + 1]);
             has_args[1] = true;
+            i++;
         }
         else if (!strcmp(argv[i], "-n")) {
             params.n = atoi(argv[i + 1]);
             has_args[2] = true;
+            i++;
         }
         else if (!strcmp(argv[i], "-m")) {
             params.m = atoi(argv[i + 1]);
             has_args[3] = true;
+            i++;
         }
         else if (!strcmp(argv[i], "-r")) {
             std::stringstream ss(argv[i+1]);
@@ -45,13 +49,14 @@ bool read_args(int argc, char* argv[]) {
             params.rr = std::stoi(token);
             has_args[4] = true;
             has_args[5] = true;
+            i++;
         }
         else if (!strcmp(argv[i], "-u")) {
             params.u = true;
             has_args[6] = true;
         }
     }
-
+    
     params.l = DEFAULT_SIZE;
 
     if (!check_args()) {
@@ -71,6 +76,10 @@ bool read_args(int argc, char* argv[]) {
 
 bool check_args() {
     // TODO，检查参数搭配使用是否正确，以及赋默认值
+    for (int i = 0; i < 7; ++i) {
+        std::cout << has_args[i] << " ";
+    }
+    std::cout << std::endl;
     params.rl = DEFAULT_RL;
     params.rr = DEFAULT_RR;
     return true;
@@ -348,13 +357,24 @@ int check_unique(std::vector<std::vector<int>>& board, int x, int y, int count) 
     return count;
 }
 
+void print_params() {
+    std::cout << "终盘数量  [1, 1e6]: " << params.c << std::endl;
+    std::cout << "待求解棋盘的相对或绝对路径: " << params.s << std::endl;
+    std::cout << "游戏数量: " << params.n << std::endl;
+    std::cout << "游戏难度  [1, 3]: " << params.m << std::endl;
+    std::cout << "挖空数量下界  [20, 55]: " << params.rl << std::endl;
+    std::cout << "终盘数量上界  [1, 1e6]: " << params.rr << std::endl;
+    std::cout << "是否生成唯一解: " << params.u << std::endl;
+}
+
 int main(int argc, char* argv[]) {
+
     if (!read_args(argc, argv)) {
         std::cout << "读取参数错误，请重新执行！" << std::endl;
         return -1;
     };
     //write_file();
-
+    print_params();
     generate_board(4);
     Log("Unsolved Board:", 1);
     draw_board(board_unsolved);
@@ -363,5 +383,6 @@ int main(int argc, char* argv[]) {
     draw_board(board);
     Log("Solved Answer:", 1);
     draw_board(board_unsolved);
+    system("pause");
     return 0;
 }
