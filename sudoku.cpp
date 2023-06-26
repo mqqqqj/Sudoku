@@ -128,19 +128,24 @@ bool generate_board(int mod) {
         // 再copy一份，用来挖空
         board_unsolved = board;
         // 挖空(一般都能true，否则设置的r不合理)
-        return dig_hole(board);
+        return dig_hole(board_unsolved);
     }
     else if (mod == 4) {
         // 先填好
         solve_sudoku(board);
         // 再copy一份，用来挖空
-        board_unsolved = board;
+        int loop = 0;
         do {
+            board_unsolved = board;    // 一定要在循环内copy一份，否则最后都是0了
+            loop++;
             // 挖空，若不是唯一解就继续挖
-            if (dig_hole(board)) {
+            if (!dig_hole(board_unsolved)) {
                 return false;
             }
-        } while (!check_unique(board_unsolved));
+        } while (check_unique(board_unsolved, 0, 0, 0) != 1);
+
+        sprintf(buf, "Unique generated! Tried %d times...", loop);
+        Log(buf, 2);
     }
     else {
         return false;
@@ -298,11 +303,49 @@ bool has_solution(const std::vector<std::vector<int>>& board) {
 }
 
 bool dig_hole(std::vector<std::vector<int>>& board) {
+    int max = params.l * params.l;
+    std::uniform_int_distribution<> dis(1, max); // 假设生成 1 到 max 之间的随机数，用来选取x和y作为挖空的下标
+    int rl = params.rl, rr = params.rr;
+    int hole_cnt = 0; // 空计数
+    int x, y, z;
+    while (hole_cnt <= rr){
+        x = dis(gen);
+        y = dis(gen);
+        // 原先不是个空，现在变成空
+        if (board[x - 1][y - 1] != 0) {
+            board[x - 1][y - 1] = 0;
+            hole_cnt++;
+        }
+        int z = dis(gen);
+        if (hole_cnt >= rl && z < (max / params.l)) {
+            break;   // 如果达到了r的最小值要求，则按照俄罗斯轮盘赌规则有一定概率break出去
+        }
+    }
+    sprintf(buf, "Totally %d hole digged!", hole_cnt);
+    Log(buf, 2);
     return true;
 }
 
-bool check_unique(std::vector<std::vector<int>>& board) {
-    return true;
+int check_unique(std::vector<std::vector<int>>& board, int x, int y, int count) {
+    int size = params.l * params.l;
+    int num;
+    if (x == size) {
+        x = 0;
+        if (++y == size) return (1 + count);
+    }
+    // Skip opened cell.
+    if (board[x][y] != 0)  return check_unique(board, x + 1, y, count);
+    // skip if the puzzle has more than one solution
+    for (num = 1; (num <= size) && (count < 2); num++) {
+        if (is_valid(board, x, y, num)) {
+            board[x][y] = num;
+            // Goto next.
+            count = check_unique(board, x + 1, y, count);
+        }
+    }
+    // Reset cell on go back.
+    board[x][y] = 0;
+    return count;
 }
 
 int main(int argc, char* argv[]) {
@@ -312,7 +355,13 @@ int main(int argc, char* argv[]) {
     };
     //write_file();
 
-    generate_board(2);
+    generate_board(4);
+    Log("Unsolved Board:", 1);
+    draw_board(board_unsolved);
+    solve_sudoku(board_unsolved);
+    Log("Standard Answer:", 1);
     draw_board(board);
+    Log("Solved Answer:", 1);
+    draw_board(board_unsolved);
     return 0;
 }

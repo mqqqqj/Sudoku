@@ -18,7 +18,7 @@ std::pair<int, int> find_empty_cell(const std::vector<std::vector<int>>& board);
 bool is_valid(const std::vector<std::vector<int>>& board, int row, int col, int num);   // 判断某个数字填入棋盘是否合法
 bool solve_sudoku(std::vector<std::vector<int>>& board);                                // 使用回溯算法填充数独棋盘
 bool has_solution(const std::vector<std::vector<int>>& board);                          // 判断是否有解
-bool check_unique(std::vector<std::vector<int>>& board);                                // 检查是否唯一解
+int check_unique(std::vector<std::vector<int>>& board, int x, int y, int count);        // 检查是否唯一解(返回解的个数)
 bool dig_hole(std::vector<std::vector<int>>& board);                                    // 挖空
 
 /*
