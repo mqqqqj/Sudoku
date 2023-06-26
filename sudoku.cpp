@@ -4,6 +4,7 @@
 #include "macro.h"
 #include "function.h"
 
+typedef long long LL;
 
 char buf[50];                                    // DEBUG
 std::vector<std::vector<int>> board;             // 棋盘终局
@@ -264,8 +265,8 @@ bool is_valid(const std::vector<std::vector<int>>& board, int row, int col, int 
     }
 
     // 检查宫，首先获取当前宫的起始x、y
-    LL startRow = (row / block) * block;
-    LL startCol = (col / block) * block;
+    LL startRow = (LL)(row / block) * (LL)block;
+    LL startCol = (LL)(col / block) * (LL)block;
 
     for (int i = 0; i < block; i++) {
         for (int j = 0; j < block; j++) {
@@ -341,7 +342,7 @@ bool dig_hole(std::vector<std::vector<int>>& board) {
     std::uniform_int_distribution<> dis(1, max); // 假设生成 1 到 max 之间的随机数，用来选取x和y作为挖空的下标
     int rl = params.rl, rr = params.rr;
     int hole_cnt = 0; // 空计数
-    int x, y;
+    LL x, y, z;
     while (hole_cnt <= rr){
         x = dis(gen);
         y = dis(gen);
@@ -350,7 +351,7 @@ bool dig_hole(std::vector<std::vector<int>>& board) {
             board[x - 1][y - 1] = 0;
             hole_cnt++;
         }
-        int z = dis(gen);
+        z = dis(gen);
         if (hole_cnt >= rl && z < (max / params.l)) {
             break;   // 如果达到了r的最小值要求，则按照俄罗斯轮盘赌规则有一定概率break出去
         }
@@ -434,9 +435,8 @@ int main(int argc, char* argv[]) {
         }
     }
     else if (has_args[2]) {
-        //指定游戏数量
+        //生成指定难度的数独游戏
         if (has_args[3]) {
-            //指定了难度
             if (params.m == 1) {
                 params.rl = 20;
                 params.rr = 30;
@@ -453,10 +453,12 @@ int main(int argc, char* argv[]) {
                 generate_board(3);
                 Log("New game:", 1);
                 draw_board(board_unsolved);
+                std::cout << std::endl;
                 // 没保存到任何地方,只是输出到屏幕上
             }
         }
         else if (has_args[4] && has_args[5]) {
+            //生成给定挖空范围的数独游戏
             for (int i = 0; i < params.n; ++i) {
                 generate_board(3);
                 Log("New game:", 1);
@@ -466,14 +468,25 @@ int main(int argc, char* argv[]) {
             }
         }
         else if (has_args[6]) {
+            //生成具有唯一解的数独游戏
             for (int i = 0; i < params.n; ++i) {
                 generate_board(4);
                 Log("New game:", 1);
                 draw_board(board_unsolved);
-                Log("Standard Answer:", 1);
-                draw_board(board);
-                solve_sudoku(board_unsolved);
-                Log("Solved Answer:", 1);
+                //Log("Standard Answer:", 1);
+                //draw_board(board);
+                //solve_sudoku(board_unsolved);
+                //Log("Solved Answer:", 1);
+                //draw_board(board_unsolved);
+                std::cout << std::endl;
+                // 没保存到任何地方,只是输出到屏幕上
+            }
+        }
+        else {
+            //生成若干个数独游戏,使用默认参数
+            for (int i = 0; i < params.n; ++i) {
+                generate_board(3);
+                Log("New game:", 1);
                 draw_board(board_unsolved);
                 std::cout << std::endl;
                 // 没保存到任何地方,只是输出到屏幕上
