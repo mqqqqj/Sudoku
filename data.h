@@ -22,5 +22,6 @@ Param params;
 bool has_args[7];
 std::vector<std::vector<int>> board;             // 棋盘终局
 std::vector<std::vector<int>> board_unsolved;    // 棋盘，待求解
+char buf[50];         // DEBUG
 
 #endif
