@@ -5,8 +5,16 @@
 #include "function.h"
 
 
+char buf[50];                                    // DEBUG
+std::vector<std::vector<int>> board;             // 棋盘终局
+std::vector<std::vector<int>> board_unsolved;    // 棋盘，待求解
+Param params;                                    // 参数数值
+bool has_args[7];                                // 参数存在
+
+// 随机数相关
 std::random_device rd;
 std::mt19937 gen(rd());
+
 
 bool read_args(int argc, char* argv[]) {
     sprintf(buf, "nums of args: %d", argc);
@@ -100,7 +108,7 @@ bool check_args() {
     }
     if (has_args[2]) {
         // n , n && m, n && rl && rr, n && u这四种情况是合法的,其他均不合法
-        int count = std::count(has_args + 3, has_args + sizeof(has_args), true);
+        LL count = std::count(has_args + 3, has_args + sizeof(has_args), true);
         if (count == 2) {
             return has_args[4] && has_args[5];
         }
@@ -235,6 +243,7 @@ bool generate_board(int mod) {
 
         sprintf(buf, "Unique generated! Tried %d times...", loop);
         Log(buf, 2);
+        return true;
     }
     else {
         return false;
@@ -255,8 +264,8 @@ bool is_valid(const std::vector<std::vector<int>>& board, int row, int col, int 
     }
 
     // 检查宫，首先获取当前宫的起始x、y
-    int startRow = (row / block) * block;
-    int startCol = (col / block) * block;
+    LL startRow = (row / block) * block;
+    LL startCol = (col / block) * block;
 
     for (int i = 0; i < block; i++) {
         for (int j = 0; j < block; j++) {

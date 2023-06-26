@@ -1,4 +1,4 @@
-#pragma once
+
 #ifndef __DATA_H__
 #define __DATA_H__
 #include <vector>
@@ -18,10 +18,5 @@ struct Param {
 	int l;           // 棋盘长度：2、3、4
 };
 
-Param params;
-bool has_args[7];
-std::vector<std::vector<int>> board;             // 棋盘终局
-std::vector<std::vector<int>> board_unsolved;    // 棋盘，待求解
-char buf[50];         // DEBUG
-
+#define LL long long
 #endif

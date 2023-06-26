@@ -1,8 +1,11 @@
-#include "function.h"
 #include "data.h"
+#include "function.h"
 #include <windows.h>
 
-void Log(const char* buf, int type) {
+// 为了解耦，定义应该放在cpp里，hpp里只有声明；所以为了共用一个params变量，使用extern
+extern Param params;
+
+void Log(const char* log_buf, int type) {
 	switch (type) {
 	case 0:break;
 	case 1:std::cout << "[LOG]:"; break;
@@ -10,8 +13,23 @@ void Log(const char* buf, int type) {
 	case 3:std::cout << "[ERROR]:"; break;
 	default:return;
 	}
-	std::cout << buf << std::endl;
+	std::cout << log_buf << std::endl;
 }
+
+
+char get_num(int num) {
+    if (num == 0)
+        return '$';
+    else if (num > 0 && num < 10)
+        return num + '0';
+    else if (num > 9 && num < 17)
+        return num - 10 + 'A';
+    else {
+        //std::cout <<"【" << num<<"】";
+        return 'X';
+    }
+}
+
 
 void draw_board(const std::vector<std::vector<int>>& board) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
