@@ -17,6 +17,14 @@ bool read_args(int argc, char* argv[]) {
     for (int i = 0; i < argc; ++i) {
         std::cout << "param[" << i << "]: " << argv[i] << std::endl;
     }
+    params.c = DEFAULT_C;
+    strcpy(params.s, DEFAULT_PATH);
+    params.n = DEFAULT_N;
+    params.m = DEFAULT_M;
+    params.rl = DEFAULT_RL;
+    params.rr = DEFAULT_RR;
+    params.u = DEFAULT_U;
+    params.l = DEFAULT_SIZE;
 
     for (int i = 1; i < argc; i++)
     {
@@ -58,7 +66,6 @@ bool read_args(int argc, char* argv[]) {
         }
     }
     
-    params.l = DEFAULT_SIZE;
 
     if (!check_args()) {
         return false;
@@ -76,7 +83,7 @@ bool read_args(int argc, char* argv[]) {
 }
 
 bool check_args() {
-    // TODO，检查参数搭配使用是否正确，以及赋默认值
+    // TODO，检查参数搭配使用是否正确,参数赋默认值在read_args函数中一开始就应完成.
     for (int i = 0; i < 7; ++i) {
         std::cout << has_args[i] << " ";
     }
@@ -396,20 +403,51 @@ int main(int argc, char* argv[]) {
 
     if (!read_args(argc, argv)) {
         std::cout << "读取参数错误，请重新执行！" << std::endl;
+        system("pause");
         return -1;
     };
     //write_file();
-    system("pause");
     print_params();
     system("pause");
-    generate_board(4);
-    Log("Unsolved Board:", 1);
-    draw_board(board_unsolved);
-    solve_sudoku(board_unsolved);
-    Log("Standard Answer:", 1);
-    draw_board(board);
-    Log("Solved Answer:", 1);
-    draw_board(board_unsolved);
+
+    if (has_args[0]) {
+        //生成若干个数独终盘
+        for (int i = 0; i < params.c; ++i) {
+            generate_board(2);
+            draw_board(board);
+            for (int i = 0; i < board.size(); ++i) {
+                std::fill(board_unsolved[i].begin(), board_unsolved[i].end(), 0);
+                std::fill(board[i].begin(), board[i].end(), 0);
+            }
+        }
+    }
+    else if (has_args[1]) {
+        //TODO::从文件中读取若干数独游戏,求解并输出到指定sudoku.txt文件
+        generate_board(3);
+        Log("Unsolved Board:", 1);
+        draw_board(board_unsolved);
+
+        solve_sudoku(board_unsolved);
+        Log("Standard Answer:", 1);
+        draw_board(board);
+        Log("Solved Answer:", 1);
+        draw_board(board_unsolved);
+    }
+    else if (has_args[2]) {
+        //指定游戏数量
+        if (has_args[3]) {
+            //指定了难度
+
+        }
+        else if (has_args[4] && has_args[5]) {
+            for (int i = 0; i < params.n; ++i) {
+
+            }
+        }
+    }
+
+
+
     system("pause");
     return 0;
 }
