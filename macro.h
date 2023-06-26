@@ -1,8 +1,8 @@
-#pragma once
+
 #ifndef __MACRO_H__
 #define __MACRO_H__
 /*
-* sudoku用到的宏定义，常数，及默认参数
+* 【macor.h】sudoku用到的宏定义，常数，及默认参数
 */
 
 // PART1.题目要求
@@ -16,6 +16,13 @@
 
 // PART2.自定义
 #define DEFAULT_SIZE 3                    // 即棋盘默认3*3=9个宫，还可以取2或4
+#define HELP_STRING "【sudoku.exe parameters helper】\n\
+-c: num of final boards [eg] -c 20\n\
+-s: path of boards unsolved [eg] -s game.txt\n\
+-n: num of games generated [eg] -n 1000\n\
+-m: difficulty of the games generated(1-esay, 2-normal, 3-hard) [eg] -n 1000 -m 1\n\
+-r: min and max num of blanks(split with ~) [eg] -n 20 -r 20~55\n\
+-u: unique solution boards [eg] -n 20 -u\n"
 
 
 #endif
