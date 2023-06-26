@@ -6,6 +6,7 @@
 #include "macro.h"
 #include "function.h"
 
+typedef long long LL;
 
 std::random_device rd;
 std::mt19937 gen(rd());
@@ -233,6 +234,7 @@ bool generate_board(int mod) {
 
         sprintf(buf, "Unique generated! Tried %d times...", loop);
         Log(buf, 2);
+        return true;
     }
     else {
         return false;
@@ -317,8 +319,8 @@ bool is_valid(const std::vector<std::vector<int>>& board, int row, int col, int 
     }
 
     // 检查宫，首先获取当前宫的起始x、y
-    int startRow = (row / block) * block;
-    int startCol = (col / block) * block;
+    LL startRow = (LL)(row / block) * (LL)block;
+    LL startCol = (LL)(col / block) * (LL)block;
 
     for (int i = 0; i < block; i++) {
         for (int j = 0; j < block; j++) {
@@ -394,7 +396,7 @@ bool dig_hole(std::vector<std::vector<int>>& board) {
     std::uniform_int_distribution<> dis(1, max); // 假设生成 1 到 max 之间的随机数，用来选取x和y作为挖空的下标
     int rl = params.rl, rr = params.rr;
     int hole_cnt = 0; // 空计数
-    int x, y, z;
+    LL x, y, z;
     while (hole_cnt <= rr){
         x = dis(gen);
         y = dis(gen);
