@@ -475,7 +475,7 @@ int main(int argc, char* argv[]) {
         }
     }
     else if (has_args[1]) {
-        //TODO::从文件中读取若干数独游戏,求解并输出到指定sudoku.txt文件
+        //从文件中读取若干数独游戏,求解并输出到指定sudoku.txt文件
         clear_file("sudoku.txt");
         std::vector<std::vector<std::vector<int>>> boards = read_file(params.s);
         for (int i = 0; i < boards.size(); ++i) {
@@ -489,20 +489,49 @@ int main(int argc, char* argv[]) {
         //指定游戏数量
         if (has_args[3]) {
             //指定了难度
-
+            if (params.m == 1) {
+                params.rl = 20;
+                params.rr = 30;
+            }
+            else if (params.m == 2) {
+                params.rl = 30;
+                params.rr = 45;
+            }
+            else if (params.m == 3) {
+                params.rl = 45;
+                params.rr = 55;
+            }
+            for (int i = 0; i < params.n; ++i) {
+                generate_board(3);
+                Log("New game:", 1);
+                draw_board(board_unsolved);
+                // 没保存到任何地方,只是输出到屏幕上
+            }
         }
         else if (has_args[4] && has_args[5]) {
             for (int i = 0; i < params.n; ++i) {
-
+                generate_board(3);
+                Log("New game:", 1);
+                draw_board(board_unsolved);
+                std::cout << std::endl;
+                // 没保存到任何地方,只是输出到屏幕上
+            }
+        }
+        else if (has_args[6]) {
+            for (int i = 0; i < params.n; ++i) {
+                generate_board(4);
+                Log("New game:", 1);
+                draw_board(board_unsolved);
+                Log("Standard Answer:", 1);
+                draw_board(board);
+                solve_sudoku(board_unsolved);
+                Log("Solved Answer:", 1);
+                draw_board(board_unsolved);
+                std::cout << std::endl;
+                // 没保存到任何地方,只是输出到屏幕上
             }
         }
     }
-
-    //solve_sudoku(board_unsolved);
-    //Log("Standard Answer:", 1);
-    //draw_board(board);
-    //Log("Solved Answer:", 1);
-    //draw_board(board_unsolved);
 
     system("pause");
     return 0;
