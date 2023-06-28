@@ -30,8 +30,9 @@ bool dig_hole(std::vector<std::vector<int>>& board);                            
 /*
 * IO读写文件
 */
-std::vector<std::vector<std::vector<int>>> read_file(const char* file_name);            // 读数独文件到棋盘
-void write_file(const char* file_name, std::vector<std::vector<int>> board);            // 写数独棋盘到文件
+bool read_and_solve(const char* in_file, const char* out_file);                         // 读数独文件到棋盘(单棋盘)并逐个求解
+std::vector<std::vector<std::vector<int>>> read_boards(const char* file_name);          // 读数独文件到棋盘(多棋盘)
+void write_board(const char* file_name, std::vector<std::vector<int>> board);           // 写数独棋盘到文件
 void clear_file(const char* file_name);                                                 // 清空文件
 
 /*
