@@ -4,8 +4,6 @@
 #include "macro.h"
 #include "function.h"
 
-typedef long long LL;
-
 char buf[50];                                    // DEBUG
 std::vector<std::vector<int>> board;             // 棋盘终局
 std::vector<std::vector<int>> board_unsolved;    // 棋盘，待求解
@@ -34,6 +32,7 @@ bool read_args(int argc, char* argv[]) {
     params.rr = DEFAULT_RR;
     params.u = DEFAULT_U;
     params.l = DEFAULT_SIZE;
+    params.r = params.rl;
 
     for (int i = 1; i < argc; i++)
     {
@@ -107,7 +106,17 @@ bool check_args() {
             return result;
         }
     }
-    if (has_args[2]) {
+    bool result = false;
+    if(has_args[3] || has_args[6]){
+        // m和u的前提是有n
+        result = has_args[2];
+    }
+    if (has_args[4] || has_args[5]) {
+        // r的前提是rl和rr同时有，且有n
+        result = has_args[4] && has_args[5] && has_args[2];
+    }
+    return result;
+    /*if (has_args[2]) {
         // n , n && m, n && rl && rr, n && u这四种情况是合法的,其他均不合法
         LL count = std::count(has_args + 3, has_args + sizeof(has_args), true);
         if (count == 2) {
@@ -118,68 +127,130 @@ bool check_args() {
         }
         else return count == 0;
     }
-    return false;
+    return false;*/
 }
 
 //将一个数独游戏写到文件中
-void write_file(const char* file_name, std::vector<std::vector<int>> board) {
+void write_board(const char* file_name, std::vector<std::vector<int>> board) {
     // 打开文件并指定路径,模式为追加写入
     std::ofstream file(file_name, std::ios::out | std::ios::app);
 
     // 检查文件是否成功打开
     if (file.is_open()) {
-        // 向文件写入数据
+        // 向文件写入数据：长度、难度、空数量
+        file << "$ " << params.l << " " << params.m << " " << params.r << std::endl;
         for (const auto& row : board) {
             for (const auto& element : row) {
                 file << element << " ";
             }
             file << std::endl;
         }
-        file << "-------END-------" << std::endl;;
         // 关闭文件
         file.close();
-        std::cout << "文件写入成功" << std::endl;
+        Log("board written", 1);
     }
     else {
         std::cout << "无法打开文件" << std::endl;
     }
 }
-
 //从文件中读若干个数独游戏
-std::vector<std::vector<std::vector<int>>> read_file(const char* file_name) {
-    std::vector<std::vector<std::vector<int>>> boards;
-    std::ifstream file(file_name);
-    if (file.is_open()) {
-        std::vector<std::vector<int>> one_board;
-        std::string line;
-        while (std::getline(file, line)) {
-            if (line ==  "-------END-------") {
-                //读取一个新的数独
-                std::vector<std::vector<int>> copied_board(one_board);//深拷贝
-                boards.push_back(copied_board);//加入到已读取的数独中
-                for (auto& row : one_board) {//清空原数独
+bool read_and_solve (const char* in_path, const char* out_path) {
+    std::ifstream in_file(in_path);
+    if (!in_file.is_open()) {
+        Log("File not opened!", 3);
+        return false;
+    }
+    clear_file(out_path);
+    bool flag = false;
+    std::vector<std::vector<int>> one_board;
+    std::string line;
+    while (std::getline(in_file, line)) {
+        if (line.substr(0, 1) == "$") {
+            // 以$开头，读取一个新的board
+            if (flag) {
+                solve_sudoku(one_board);
+                write_board(out_path, one_board);
+                draw_board(one_board);
+                //清空原数独
+                for (auto& row : one_board) {
                     row.clear();
                 }
                 one_board.clear();
                 one_board.resize(0);
-                continue;
             }
-            std::vector<int> row;
+            flag = true;
+            // 读取一些参数：l、m、r
             std::istringstream iss(line);
-            int num;
-
-            while (iss >> num) {
-                row.push_back(num);
-            }
-
-            one_board.push_back(row);
+            std::string tmp;
+            iss >> tmp;
+            iss >> params.l;
+            iss >> params.m;
+            iss >> params.r;
+            continue;
         }
-        file.close();
-        std::cout << "文件读取成功" << std::endl;
+        std::vector<int> row;
+        std::istringstream iss(line);
+        int num;
+        while (iss >> num) {
+            row.push_back(num);
+        }
+
+        one_board.push_back(row);
     }
-    else {
-        std::cout << "无法打开文件" << std::endl;
+    solve_sudoku(one_board);
+    write_board(out_path, one_board);
+    draw_board(one_board); 
+    in_file.close();
+    return true;
+}
+
+//从文件中读若干个数独游戏
+std::vector<std::vector<std::vector<int>>> read_boards(const char* file_name) {
+    std::vector<std::vector<std::vector<int>>> boards;
+    std::ifstream file(file_name);
+    if (!file.is_open()) {
+        Log("File not opened!", 3);
+        return boards;
     }
+    bool flag = false;
+    std::vector<std::vector<int>> one_board;
+    std::string line;
+    while (std::getline(file, line)) {
+        
+        if (line.substr(0, 1) == "$") {
+            // 以$开头，读取一个新的board
+            if (flag) {
+                std::vector<std::vector<int>> copied_board(one_board);//深拷贝
+                boards.push_back(copied_board);//加入到已读取的数独中
+                //清空原数独
+                for (auto& row : one_board) {
+                    row.clear();
+                }
+                one_board.clear();
+                one_board.resize(0);
+            }
+            flag = true;
+            // 读取一些参数：l、m、r
+            std::istringstream iss(line);
+            std::string tmp;
+            iss >> tmp;
+            iss >> params.l;
+            iss >> params.m;
+            iss >> params.r;
+            continue;
+        }
+        std::vector<int> row;
+        std::istringstream iss(line);
+        int num;
+        while (iss >> num) {
+            row.push_back(num);
+        }
+
+        one_board.push_back(row);
+    }
+    std::vector<std::vector<int>> copied_board(one_board);//深拷贝
+    boards.push_back(copied_board);//加入到已读取的数独中
+    file.close();
     return boards;
 }
 
@@ -357,6 +428,7 @@ bool dig_hole(std::vector<std::vector<int>>& board) {
         }
     }
     sprintf(buf, "Totally %d hole digged!", hole_cnt);
+    params.r = hole_cnt;
     Log(buf, 2);
     return true;
 }
@@ -408,15 +480,18 @@ int main(int argc, char* argv[]) {
         system("pause");
         return -1;
     };
-    //write_file();
+    //write_board();
     print_params();
     system("pause");
 
+
     if (has_args[0]) {
         //生成若干个数独终盘
+        clear_file(DEFAULT_PATH);
         for (int i = 0; i < params.c; ++i) {
             generate_board(2);
             draw_board(board);
+            write_board(DEFAULT_PATH, board);
             for (int i = 0; i < board.size(); ++i) {
                 std::fill(board_unsolved[i].begin(), board_unsolved[i].end(), 0);
                 std::fill(board[i].begin(), board[i].end(), 0);
@@ -425,16 +500,19 @@ int main(int argc, char* argv[]) {
     }
     else if (has_args[1]) {
         //从文件中读取若干数独游戏,求解并输出到指定sudoku.txt文件
-        clear_file("sudoku.txt");
-        std::vector<std::vector<std::vector<int>>> boards = read_file(params.s);
+        clear_file(DEFAULT_SAVE_PATH);
+        read_and_solve(DEFAULT_PATH, DEFAULT_SAVE_PATH);
+        /*std::vector<std::vector<std::vector<int>>> boards = read_boards(params.s);
         for (int i = 0; i < boards.size(); ++i) {
             draw_board(boards[i]);
             board_unsolved = boards[i];
             solve_sudoku(board_unsolved);
-            write_file("sudoku.txt", board_unsolved);
-        }
+            write_board(DEFAULT_SAVE_PATH, board_unsolved);
+        }*/
     }
+    // 提供了参数 n
     else if (has_args[2]) {
+        clear_file(DEFAULT_PATH);
         //生成指定难度的数独游戏
         if (has_args[3]) {
             if (params.m == 1) {
@@ -454,7 +532,7 @@ int main(int argc, char* argv[]) {
                 Log("New game:", 1);
                 draw_board(board_unsolved);
                 std::cout << std::endl;
-                // 没保存到任何地方,只是输出到屏幕上
+                write_board(DEFAULT_PATH, board_unsolved);
             }
         }
         else if (has_args[4] && has_args[5]) {
@@ -464,7 +542,7 @@ int main(int argc, char* argv[]) {
                 Log("New game:", 1);
                 draw_board(board_unsolved);
                 std::cout << std::endl;
-                // 没保存到任何地方,只是输出到屏幕上
+                write_board(DEFAULT_PATH, board_unsolved);
             }
         }
         else if (has_args[6]) {
@@ -473,13 +551,8 @@ int main(int argc, char* argv[]) {
                 generate_board(4);
                 Log("New game:", 1);
                 draw_board(board_unsolved);
-                //Log("Standard Answer:", 1);
-                //draw_board(board);
-                //solve_sudoku(board_unsolved);
-                //Log("Solved Answer:", 1);
-                //draw_board(board_unsolved);
                 std::cout << std::endl;
-                // 没保存到任何地方,只是输出到屏幕上
+                write_board(DEFAULT_PATH, board_unsolved);
             }
         }
         else {
@@ -489,7 +562,7 @@ int main(int argc, char* argv[]) {
                 Log("New game:", 1);
                 draw_board(board_unsolved);
                 std::cout << std::endl;
-                // 没保存到任何地方,只是输出到屏幕上
+                write_board(DEFAULT_PATH, board_unsolved);
             }
         }
     }
