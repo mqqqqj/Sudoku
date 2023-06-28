@@ -1,5 +1,5 @@
 #include <algorithm>
-
+#include <set>
 #include "data.h"
 #include "macro.h"
 #include "function.h"
@@ -480,40 +480,41 @@ int main(int argc, char* argv[]) {
         system("pause");
         return -1;
     };
-    //write_board();
+
     print_params();
     system("pause");
 
+    // 生成不重复的board
+    std::set<std::vector<std::vector<int>>> uniqueBoards;
+    int uniqueCnt = 0;
 
+    // 参数c
     if (has_args[0]) {
         //生成若干个数独终盘
         clear_file(DEFAULT_PATH);
-        for (int i = 0; i < params.c; ++i) {
+        while (uniqueCnt < params.c) {
             generate_board(2);
-            draw_board(board);
-            write_board(DEFAULT_PATH, board);
-            for (int i = 0; i < board.size(); ++i) {
-                std::fill(board_unsolved[i].begin(), board_unsolved[i].end(), 0);
-                std::fill(board[i].begin(), board[i].end(), 0);
+            std::vector<std::vector<int>> copied_board = board;
+            uniqueBoards.insert(copied_board);
+            // 不重复才计数、打印、写文件
+            if (uniqueCnt < uniqueBoards.size()) { 
+                uniqueCnt++; 
+                draw_board(board);
+                write_board(DEFAULT_PATH, board);
             }
         }
     }
+    // 参数s
     else if (has_args[1]) {
         //从文件中读取若干数独游戏,求解并输出到指定sudoku.txt文件
         clear_file(DEFAULT_SAVE_PATH);
         read_and_solve(DEFAULT_PATH, DEFAULT_SAVE_PATH);
-        /*std::vector<std::vector<std::vector<int>>> boards = read_boards(params.s);
-        for (int i = 0; i < boards.size(); ++i) {
-            draw_board(boards[i]);
-            board_unsolved = boards[i];
-            solve_sudoku(board_unsolved);
-            write_board(DEFAULT_SAVE_PATH, board_unsolved);
-        }*/
     }
-    // 提供了参数 n
+    // 参数 n
     else if (has_args[2]) {
         clear_file(DEFAULT_PATH);
-        //生成指定难度的数独游戏
+        clear_file(DEFAULT_ANS_PATH);
+        // 如果设置了难度m，首先更新r
         if (has_args[3]) {
             if (params.m == 1) {
                 params.rl = 20;
@@ -527,44 +528,25 @@ int main(int argc, char* argv[]) {
                 params.rl = 45;
                 params.rr = 55;
             }
-            for (int i = 0; i < params.n; ++i) {
-                generate_board(3);
-                Log("New game:", 1);
-                draw_board(board_unsolved);
-                std::cout << std::endl;
-                write_board(DEFAULT_PATH, board_unsolved);
-            }
         }
-        else if (has_args[4] && has_args[5]) {
-            //生成给定挖空范围的数独游戏
-            for (int i = 0; i < params.n; ++i) {
-                generate_board(3);
-                Log("New game:", 1);
-                draw_board(board_unsolved);
-                std::cout << std::endl;
-                write_board(DEFAULT_PATH, board_unsolved);
-            }
-        }
-        else if (has_args[6]) {
-            //生成具有唯一解的数独游戏
-            for (int i = 0; i < params.n; ++i) {
+        // 然后生成，注意区分是否有-u参数
+        while (uniqueCnt < params.n) {
+            if (has_args[6]) 
                 generate_board(4);
-                Log("New game:", 1);
-                draw_board(board_unsolved);
-                std::cout << std::endl;
-                write_board(DEFAULT_PATH, board_unsolved);
-            }
-        }
-        else {
-            //生成若干个数独游戏,使用默认参数
-            for (int i = 0; i < params.n; ++i) {
+            else
                 generate_board(3);
-                Log("New game:", 1);
-                draw_board(board_unsolved);
-                std::cout << std::endl;
-                write_board(DEFAULT_PATH, board_unsolved);
+            std::vector<std::vector<int>> copied_board = board_unsolved;
+            std::vector<std::vector<int>> copied_board_ans = board;
+            uniqueBoards.insert(copied_board);
+            // 不重复才计数、打印、写文件
+            if (uniqueCnt < uniqueBoards.size()) {
+                uniqueCnt++;
+                draw_board(copied_board);
+                write_board(DEFAULT_PATH, copied_board);
+                write_board(DEFAULT_ANS_PATH, copied_board_ans);
             }
         }
+
     }
 
     system("pause");

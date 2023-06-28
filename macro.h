@@ -9,6 +9,7 @@
 #define DEFAULT_C 20                      // 默认生成20个终盘
 #define DEFAULT_PATH "game.txt"           // 默认生成数独到game.txt
 #define DEFAULT_SAVE_PATH "sudoku.txt"    // 默认求解数独结果保存到sudoku.txt
+#define DEFAULT_ANS_PATH "answer.txt"     // 默认生成数独的解保存到answer.txt
 #define DEFAULT_N 50                      // 默认生成50个游戏
 #define DEFAULT_M 2                       // 默认难度为2
 #define DEFAULT_RL 20                     // 默认挖最少20个空
