@@ -16,16 +16,16 @@ namespace sudoku {
     std::mt19937 gen(rd());
 
     bool read_args(int argc, char* argv[]) {
-        sprintf(buf, "nums of args: %d", argc);
+        sprintf_s(buf, sizeof(buf), "nums of args: %d", argc);
         Log(buf, 1);
 
         // DEBUG
         for (int i = 0; i < argc; ++i) {
-            sprintf(buf, "param[%d]: %s", argc, argv[i]);
+            sprintf_s(buf, sizeof(buf), "param[%d]: %s", argc, argv[i]);
             Log(buf, 1);
         }
         params.c = DEFAULT_C;
-        strcpy(params.s, DEFAULT_PATH);
+        strcpy_s(params.s, sizeof(DEFAULT_PATH), DEFAULT_PATH);
         params.n = DEFAULT_N;
         params.m = DEFAULT_M;
         params.rl = DEFAULT_RL;
@@ -43,7 +43,7 @@ namespace sudoku {
                 i++;
             }
             else if (!strcmp(argv[i], "-s")) {
-                sprintf(params.s, "%s", argv[i + 1]);
+                sprintf_s(params.s, sizeof(argv[i + 1])+1, "%s", argv[i + 1]);
                 has_args[1] = true;
                 i++;
             }
@@ -313,7 +313,7 @@ namespace sudoku {
                 }
             } while (check_unique(board_unsolved, 0, 0, 0) != 1);
 
-            sprintf(buf, "Unique generated! Tried %d times...", loop);
+            sprintf_s(buf, sizeof(buf), "Unique generated! Tried %d times...", loop);
             Log(buf, 2);
             return true;
         }
@@ -427,7 +427,7 @@ namespace sudoku {
                 break;   // 如果达到了r的最小值要求，则按照俄罗斯轮盘赌规则有一定概率break出去
             }
         }
-        sprintf(buf, "Totally %d hole digged!", hole_cnt);
+        sprintf_s(buf,sizeof(buf), "Totally %d hole digged!", hole_cnt);
         params.r = hole_cnt;
         Log(buf, 2);
         return true;
