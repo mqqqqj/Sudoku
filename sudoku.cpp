@@ -43,7 +43,7 @@ namespace sudoku {
                 i++;
             }
             else if (!strcmp(argv[i], "-s")) {
-                sprintf_s(params.s, sizeof(argv[i + 1]), "%s", argv[i + 1]);
+                sprintf_s(params.s, sizeof(argv[i + 1])+1, "%s", argv[i + 1]);
                 has_args[1] = true;
                 i++;
             }

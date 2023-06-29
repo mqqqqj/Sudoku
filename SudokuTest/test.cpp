@@ -7,35 +7,7 @@
 
 using namespace sudoku;
 
-
-
-TEST(TESTLOG, TestLOG) {
-    // 创建一个输出流用于捕获 cout 的输出
-    std::ostringstream oss;
-    // 重定向 cout 到输出流
-    std::streambuf* coutBuffer = std::cout.rdbuf();
-    std::cout.rdbuf(oss.rdbuf());
-
-    // 在函数或代码块中执行你要测试的输出
-    Log("test log", 1);
-    // 恢复 cout 到原来的缓冲区
-    std::cout.rdbuf(coutBuffer);
-
-    // 检查输出是否符合预期
-    std::string output = oss.str();
-    EXPECT_EQ("[LOG]:test log\n", output);
-}
 /*
-TEST(TestREADARGS, WrongParams) {
-    for (int i = 0; i < 7; i++) {
-        has_args[i] = false;
-    }
-    int n_args = 12;
-    char* c_args[] = { "**.exe", "-c", "2", "-s", "game.txt", "-n", "1", "-m", "2", "-r", "20~30", "-u" };
-    bool res = read_args(n_args, c_args);
-    EXPECT_EQ(false, res);
-}*/
-
 
 TEST(TestREADARGS, RightParams) {
     for (int i = 0; i < 7; i++) {
@@ -137,37 +109,249 @@ TEST(TestPlay, TestNMU) {
     }
 }
 
-TEST(TestPlay, TESTC) {
-    extern std::vector<std::vector<int>> board;
-    extern std::vector<std::vector<int>> board_unsolved;
-    for (int i = 0; i < 7; i++) {
-        has_args[i] = false;
-    }
-    int n_args = 3;
-    char* c_args[] = { "**.exe", "-c", "2" };
-    read_args(n_args, c_args);
-    print_params();
 
-    // 生成不重复的board
-    std::set<std::vector<std::vector<int>>> uniqueBoards;
-    int uniqueCnt = 0;
-    //生成若干个数独终盘
-    clear_file(DEFAULT_PATH);
-    while (uniqueBoards.size() < params.c) {
-        generate_board(2);
-        std::vector<std::vector<int>> copied_board = board;
-        copied_board.resize(board.size()); // 调整外层向量大小
-        for (size_t i = 0; i < board.size(); i++) {
-            copied_board[i] = board[i]; // 对内层向量进行深拷贝
-        }
-        if (std::find(uniqueBoards.begin(), uniqueBoards.end(), copied_board) == uniqueBoards.end()) {
-            // 不存在，才插入
-            uniqueBoards.insert(copied_board);
-            //draw_board(board);
-            //write_board(DEFAULT_PATH, board);
-        }
-    }
+*/
+
+
+/*
+* ZYR
+*/
+
+TEST(TESTDEBUG, LOG) {
+    testing::internal::CaptureStdout(); // 捕获标准输出
+    Log("test log none", 0);
+    std::string output1 = testing::internal::GetCapturedStdout(); // 获取捕获的标准输出
+
+    testing::internal::CaptureStdout(); // 捕获标准输出
+    Log("test log normal", 1);
+    std::string output2 = testing::internal::GetCapturedStdout(); // 获取捕获的标准输出
+
+    testing::internal::CaptureStdout(); // 捕获标准输出
+    Log("test log warning", 2);
+    std::string output3 = testing::internal::GetCapturedStdout(); // 获取捕获的标准输出
+
+    testing::internal::CaptureStdout(); // 捕获标准输出
+    Log("test log error", 3);
+    std::string output4 = testing::internal::GetCapturedStdout(); // 获取捕获的标准输出
+
+
+    // 检查输出是否符合预期
+    EXPECT_EQ("test log none\n", output1);
+    EXPECT_EQ("[LOG]:test log normal\n", output2);
+    EXPECT_EQ("[WARN]:test log warning\n", output3);
+    EXPECT_EQ("[ERROR]:test log error\n", output4);
 }
+
+
+TEST(TESTDEBUG, GETNUM) {
+    // 输入整数，输出的是棋盘不同的符号，0、0-9、9-17、else
+    int nums[5] = { 0,3,12,19,-2 };
+    char chs[5];
+    for (int i = 0; i < 5; i++) {
+        chs[i] = get_num(nums[i]);
+    }
+
+    EXPECT_EQ(chs[0], '$');
+    EXPECT_EQ(chs[1], '3');
+    EXPECT_EQ(chs[2], 'C');
+    EXPECT_EQ(chs[3], 'X');
+    EXPECT_EQ(chs[4], 'X');
+}
+
+TEST(TESTDEBUG, DRAWBOARD) {
+    // 自拟棋盘，只设置了前5个
+    std::vector<std::vector<int>> my_board(9, std::vector<int>(9, 0));
+    my_board[0][0] = 0;
+    my_board[0][1] = 3;
+    my_board[0][2] = 12;
+    my_board[0][3] = 19;
+    my_board[0][4] = -2;
+    params.l = 3;
+    // 使用stringstream模拟输出到标准输出
+    std::stringstream output;
+    // 将输出重定向到stringstream
+    std::streambuf* oldCoutBuffer = std::cout.rdbuf(output.rdbuf());
+    // 输出函数调用
+    draw_board(my_board);
+    // 恢复标准输出
+    std::cout.rdbuf(oldCoutBuffer);
+
+    // 验证输出是否符合预期
+    std::string expectedOutput = "\
+*************************\n\
++-------+-------+-------+\n\
+| $ 3 C | X X $ | $ $ $ | \n\
+| $ $ $ | $ $ $ | $ $ $ | \n\
+| $ $ $ | $ $ $ | $ $ $ | \n\
++-------+-------+-------+\n\
+| $ $ $ | $ $ $ | $ $ $ | \n\
+| $ $ $ | $ $ $ | $ $ $ | \n\
+| $ $ $ | $ $ $ | $ $ $ | \n\
++-------+-------+-------+\n\
+| $ $ $ | $ $ $ | $ $ $ | \n\
+| $ $ $ | $ $ $ | $ $ $ | \n\
+| $ $ $ | $ $ $ | $ $ $ | \n\
++-------+-------+-------+\n\
+*************************\n";
+
+    EXPECT_EQ(output.str(), expectedOutput);
+}
+
+
+TEST(TESTIO, WRITEBOARD) {
+    // 测试write_board，1.检查是否正常打印  2.检查写入文件的board是否正确
+    std::string outputPath = "D:/testdata/test_writeboard_output.txt";
+    std::string expectedOutputPath = "D:/testdata/test_writeboard_expected_output.txt";
+    std::vector<std::vector<int>> my_board(9, std::vector<int>(9, 0));
+    my_board[0][0] = 0;
+    my_board[0][1] = 3;
+    my_board[0][2] = 12;
+    my_board[0][3] = 19;
+    my_board[0][4] = -2;
+    params.l = 3;
+    params.m = 2;
+    params.r = 33;
+    // 清空文件
+    std::ofstream outputFile(outputPath, std::ios::trunc);
+    ASSERT_TRUE(outputFile.is_open());
+    outputFile.close();
+    // 1.1创建一个输出流用于捕获 cout 的输出
+    std::ostringstream oss;
+    // 1.2重定向 cout 到输出流
+    std::streambuf* coutBuffer = std::cout.rdbuf();
+    std::cout.rdbuf(oss.rdbuf());
+    write_board(outputPath.c_str(), my_board);
+    // 1.3恢复 cout 到原来的缓冲区
+    std::cout.rdbuf(coutBuffer);
+    // 1.4检查输出是否符合预期
+    std::string output = oss.str();
+    EXPECT_EQ("[LOG]:board written\n", output);
+    // 2.1读取期望的输出文件
+    std::string line;
+    std::ifstream expectedOutputFile(expectedOutputPath);
+    ASSERT_TRUE(expectedOutputFile.is_open());
+    std::string expectedOutputData;
+    while (std::getline(expectedOutputFile, line)) {
+        expectedOutputData += line;
+    }
+    expectedOutputFile.close();
+    // 2.2读取生成的输出文件
+    std::ifstream generatedOutputFile(outputPath);
+    ASSERT_TRUE(generatedOutputFile.is_open());
+    std::string generatedOutputData;
+    while (std::getline(generatedOutputFile, line)) {
+        generatedOutputData += line;
+    }
+    generatedOutputFile.close();
+    // 2.3比较生成的输出与期望的输出
+    EXPECT_EQ(expectedOutputData, generatedOutputData);
+}
+
+TEST(TESTIO, READBOARD) {
+    // 测试std::vector<std::vector<std::vector<int>>> read_boards(const char* file_name)
+    std::string inputFilePath = "D:/testdata/test_readboard_input.txt";
+    // 调用函数读取
+    std::vector<std::vector<std::vector<int>>> boards = read_boards(inputFilePath.c_str());
+    // 使用stringstream模拟输出到标准输出
+    std::stringstream output;
+    // 将输出重定向到stringstream
+    std::streambuf* oldCoutBuffer = std::cout.rdbuf(output.rdbuf());
+    // 输出函数调用
+    draw_board(boards[0]);
+    draw_board(boards[1]);
+    // 恢复标准输出
+    std::cout.rdbuf(oldCoutBuffer);
+
+    // 验证输出是否符合预期
+    std::string expectedOutput = "\
+*************************\n\
++-------+-------+-------+\n\
+| 2 8 $ | $ 1 6 | 7 4 5 | \n\
+| $ 4 9 | 2 $ $ | $ $ $ | \n\
+| 6 $ 1 | 5 4 3 | 9 8 $ | \n\
++-------+-------+-------+\n\
+| $ 9 $ | $ 2 5 | $ 1 3 | \n\
+| 1 $ 6 | $ 3 $ | $ 2 7 | \n\
+| 3 2 4 | 7 6 1 | 8 5 9 | \n\
++-------+-------+-------+\n\
+| $ 6 7 | $ $ 8 | 2 3 4 | \n\
+| 8 $ 2 | 3 7 $ | 5 $ $ | \n\
+| 4 $ 5 | $ 9 2 | $ $ $ | \n\
++-------+-------+-------+\n\
+*************************\n\
+*************************\n\
++-------+-------+-------+\n\
+| $ $ $ | $ 1 $ | 7 $ $ | \n\
+| 5 4 9 | $ 8 7 | 3 6 $ | \n\
+| 6 7 1 | $ 4 $ | 9 $ 2 | \n\
++-------+-------+-------+\n\
+| $ 9 8 | 4 $ 5 | 6 $ $ | \n\
+| 1 $ $ | $ 3 9 | 4 2 7 | \n\
+| $ $ $ | $ $ 1 | 8 $ 9 | \n\
++-------+-------+-------+\n\
+| $ $ 7 | 1 $ 8 | 2 3 $ | \n\
+| 8 $ $ | $ $ 4 | 5 9 6 | \n\
+| 4 3 $ | 6 9 2 | 1 7 8 | \n\
++-------+-------+-------+\n\
+*************************\n";
+    // 比较生成的输出与期望的输出
+    EXPECT_EQ(output.str(), expectedOutput);
+
+}
+
+TEST(TESTIO, CLEARFILE) {
+    // 测试void clear_file(const char* file_name)
+    std::string file_path = "D:/testdata/test_clearfile.txt";
+    // 把内容先读出来
+    std::ifstream file(file_path);
+    ASSERT_TRUE(file.is_open());
+    std::string line;
+    std::string file_data;
+    // 清空文件
+    clear_file(file_path.c_str());
+    // 再次读取
+    std::string file_data_new;
+    while (std::getline(file, line)) {
+        file_data_new = file_data + "\n" + line;
+    }
+    file.close();
+    // 验证为空
+    EXPECT_EQ(file_data_new, "");
+
+}
+
+TEST(TESTIO, READSOLVE) {
+    // 测试bool read_and_solve(const char* in_file, const char* out_file);
+    std::string in_path = "D:/testdata/test_readsolve_input.txt";
+    std::string out_path = "D:/testdata/test_readsolve_output.txt";
+    std::string expect_path = "D:/testdata/test_readsolve_expected_output.txt";
+    // 清空输出文件
+    clear_file(out_path.c_str());
+    // 调用函数
+    read_and_solve(in_path.c_str(), out_path.c_str());
+
+    // 读取输出文件
+    std::string line;
+    std::ifstream outputFile(out_path);
+    ASSERT_TRUE(outputFile.is_open());
+    std::string outputData;
+    while (std::getline(outputFile, line)) {
+        outputData += line;
+    }
+    outputFile.close();
+    // 读取期望文件
+    std::ifstream expectFile(out_path);
+    ASSERT_TRUE(expectFile.is_open());
+    std::string expectData;
+    while (std::getline(expectFile, line)) {
+        expectData += line;
+    }
+    outputFile.close();
+    // 比较
+    EXPECT_EQ(expectData, outputData);
+
+}
+
 
 //:: testing :: InitGoogleTest（）函数解析Google测试标志的命令行，
 //并删除所有已识别的标志。 这允许用户通过各种标志控制测试程序的行为.
